@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: spam-detector
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn spam_detector.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: spam-detector.onrender.com,localhost,127.0.0.1
+    autoDeploy: true
