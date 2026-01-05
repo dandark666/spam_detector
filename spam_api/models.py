@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import nltk
 
-# Descargar stopwords una vez
+# Descargar stopwords si no están
 try:
     nltk.data.find('corpora/stopwords')
 except:
@@ -22,44 +22,36 @@ class LogisticSpamPredictor:
         self.loaded = False
     
     def load_models(self):
-        """Cargar solo modelo de regresión logística"""
+        """Cargar modelos"""
         try:
             # Cargar vectorizer
-            self.vectorizer = joblib.load('models/vectorizer.pkl')
-            print("Vectorizer cargado")
+            vectorizer_path = 'models/vectorizer.pkl'
+            if os.path.exists(vectorizer_path):
+                self.vectorizer = joblib.load(vectorizer_path)
+            else:
+                print("Vectorizer no encontrado")
+                return False
             
-            # Cargar solo regresión logística
+            # Cargar modelo
             model_path = 'models/logistic_regression_model.pkl'
             if os.path.exists(model_path):
                 self.model = joblib.load(model_path)
-                print("Modelo de Regresión Logística cargado")
             else:
-                # Intentar cargar con otro nombre
-                alt_paths = [
-                    'models/logistic_regression.pkl',
-                    'models/model.pkl'
-                ]
-                for path in alt_paths:
-                    if os.path.exists(path):
-                        self.model = joblib.load(path)
-                        print(f"Modelo cargado desde {path}")
-                        break
+                print("Modelo no encontrado")
+                return False
             
             # Cargar métricas
             metrics_path = 'models/metrics.pkl'
             if os.path.exists(metrics_path):
                 with open(metrics_path, 'rb') as f:
                     all_metrics = pickle.load(f)
-                    # Solo tomar métricas de regresión logística
                     if 'logistic_regression' in all_metrics:
                         self.metrics = all_metrics['logistic_regression']
                     else:
                         # Tomar el primer modelo disponible
                         for key, value in all_metrics.items():
                             self.metrics = value
-                            print(f"Usando métricas de {key}")
                             break
-                print("Métricas cargadas")
             
             self.loaded = True
             return True
@@ -73,35 +65,22 @@ class LogisticSpamPredictor:
         if not isinstance(text, str):
             return ""
         
-        # Convertir a minúsculas
         text = text.lower()
-        
-        # Eliminar URLs
         text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
-        
-        # Eliminar emails
         text = re.sub(r'\S*@\S*\s?', '', text)
-        
-        # Eliminar caracteres especiales y números
         text = re.sub(r'[^a-zA-Z\s]', '', text)
-        
-        # Eliminar espacios extra
         text = re.sub(r'\s+', ' ', text).strip()
         
-        # Tokenización y stemming
         words = text.split()
         words = [self.stemmer.stem(word) for word in words if word not in self.stop_words]
         
         return ' '.join(words)
     
     def predict(self, email_text):
-        """Predecir si un email es spam usando Regresión Logística"""
+        """Predecir si un email es spam"""
         if not self.loaded:
             if not self.load_models():
                 raise Exception("No se pudieron cargar los modelos")
-        
-        if self.model is None:
-            raise ValueError("Modelo de Regresión Logística no encontrado")
         
         # Preprocesar
         processed_text = self.preprocess_text(email_text)
