@@ -5,9 +5,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-spam-detector-key-change-in-production'
 
-DEBUG = True
+# CAMBIA ESTO: False en producción
+DEBUG = False  # Cambia de True a False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# AGREGA TU DOMINIO DE RENDER AQUÍ:
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1',
+    'spam-detector-sdb8.onrender.com',  # ← AGREGADO
+    '.onrender.com',  # ← Para cualquier subdominio de Render
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,10 +24,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'spam_api',
+    'whitenoise',  # ← AGREGADO para archivos estáticos en Render
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← AGREGADO (después de SecurityMiddleware)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,7 +85,26 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS PARA RENDER
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← AGREGADO
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+# Whitenoise para comprimir archivos estáticos
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # ← AGREGADO
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# OPCIONAL: Configuración automática para Render
+import os
+# Detectar si estamos en Render
+if 'RENDER' in os.environ:
+    # Configuración adicional para producción
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Agregar hostname dinámico si existe
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
