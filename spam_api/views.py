@@ -20,7 +20,6 @@ def get_metrics(request):
     try:
         metrics = spam_predictor.get_metrics()
         
-        # Formatear métricas
         formatted_metrics = {
             'accuracy': round(metrics.get('accuracy', 0) * 100, 2),
             'precision': round(metrics.get('precision', 0) * 100, 2),
@@ -56,7 +55,6 @@ def predict_spam(request):
                 'message': 'No se proporcionó texto de email'
             }, status=400)
         
-        # Realizar predicción (solo regresión logística)
         result = spam_predictor.predict(email_text)
         
         return JsonResponse({
@@ -70,16 +68,3 @@ def predict_spam(request):
             'status': 'error',
             'message': f'Error en la predicción: {str(e)}'
         }, status=500)
-
-@require_GET
-def get_model_info(request):
-    """Obtener información del modelo"""
-    return JsonResponse({
-        'status': 'success',
-        'model': {
-            'name': 'logistic_regression',
-            'description': 'Regresión Logística - Modelo lineal probabilístico balanceado',
-            'features': 'TF-IDF con 5000 características',
-            'algorithm': 'Clasificación binaria con regularización L2'
-        }
-    })
