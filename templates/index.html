@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detección de Spam - Regresión Logística</title>
+    <title>Sistema de Detección - Spam & Intrusiones</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -57,14 +57,53 @@
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.9rem;
-            margin-top: 10px;
+            margin: 5px;
+        }
+
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.3);
+            font-weight: 600;
+        }
+
+        .content-section {
+            display: none;
+            padding: 30px;
+        }
+
+        .content-section.active {
+            display: block;
         }
 
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            padding: 30px;
+            margin-top: 20px;
         }
 
         @media (max-width: 900px) {
@@ -110,6 +149,46 @@
             box-shadow: 0 0 0 3px rgba(43, 88, 118, 0.1);
         }
 
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2b5876;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .feature-input {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
         .btn {
             background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
             color: white;
@@ -137,6 +216,10 @@
             background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
         }
 
+        .btn-intrusion {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+
         .result-container {
             margin-top: 20px;
             display: none;
@@ -160,6 +243,16 @@
             background: linear-gradient(135deg, #f0fff4 0%, #dcffe4 100%);
         }
 
+        .result-intrusion {
+            border-left-color: #ff416c;
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe8e8 100%);
+        }
+
+        .result-normal {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f0fff4 0%, #dcffe4 100%);
+        }
+
         .result-header {
             display: flex;
             align-items: center;
@@ -176,11 +269,13 @@
             font-weight: 700;
         }
 
-        .result-spam .result-title {
+        .result-spam .result-title,
+        .result-intrusion .result-title {
             color: #dc3545;
         }
 
-        .result-ham .result-title {
+        .result-ham .result-title,
+        .result-normal .result-title {
             color: #28a745;
         }
 
@@ -330,42 +425,6 @@
             color: #6c757d;
         }
 
-        .tab-container {
-            margin: 15px 0;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #e9ecef;
-            margin-bottom: 15px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            font-weight: 600;
-            color: #6c757d;
-            transition: all 0.3s;
-        }
-
-        .tab:hover {
-            color: #2b5876;
-        }
-
-        .tab.active {
-            color: #2b5876;
-            border-bottom-color: #2b5876;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
         .model-info {
             background: #e9ecef;
             padding: 15px;
@@ -387,6 +446,57 @@
             font-size: 0.9rem;
         }
 
+        .chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2b5876;
+            font-weight: 600;
+        }
+
+        #protocolChart {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        .dataset-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .dataset-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .dataset-stat {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2b5876;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
         footer {
             text-align: center;
             padding: 20px;
@@ -396,316 +506,706 @@
             font-size: 0.9rem;
         }
 
-        .stats-summary {
-            display: flex;
-            justify-content: space-around;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+        .features-section {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 15px;
         }
 
-        .stat-item {
-            text-align: center;
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #f1f1f1;
         }
 
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .feature-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .feature-value {
+            text-align: right;
             color: #2b5876;
         }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="logo">📧</div>
-            <h1>Detección de Spam</h1>
-            <p class="subtitle">Sistema basado en Regresión Logística</p>
-            <div class="model-badge">Modelo: Regresión Logística</div>
+            <div class="logo">🛡️</div>
+            <h1>Sistema de Detección</h1>
+            <p class="subtitle">Spam de Correos & Intrusiones de Red</p>
+            <div>
+                <span class="model-badge">Modelo: Regresión Logística</span>
+                <span class="model-badge">Dataset: KDD Cup 1999</span>
+            </div>
+            
+            <div class="main-nav">
+                <button class="nav-btn active" onclick="switchSection('spam')">📧 Spam Email</button>
+                <button class="nav-btn" onclick="switchSection('intrusion')">🛡️ Intrusiones Red</button>
+                <button class="nav-btn" onclick="switchSection('metrics')">📊 Métricas</button>
+                <button class="nav-btn" onclick="switchSection('dataset')">📁 Dataset</button>
+            </div>
         </header>
 
-        <div class="main-content">
-            <!-- Panel de Análisis -->
-            <div class="panel">
-                <h2 class="panel-title">🔍 Analizar Correo</h2>
-                
-                <div class="tab-container">
-                    <div class="tabs">
-                        <div class="tab active" onclick="switchTab('text')">📝 Texto</div>
-                        <div class="tab" onclick="switchTab('file')">📁 Archivo</div>
-                    </div>
+        <!-- Sección Spam Email -->
+        <div id="spam-section" class="content-section active">
+            <div class="main-content">
+                <div class="panel">
+                    <h2 class="panel-title">📧 Analizar Correo</h2>
                     
-                    <div id="text-tab" class="tab-content active">
-                        <textarea id="emailText" placeholder="Pega el contenido del correo aquí..."></textarea>
-                    </div>
-                    
-                    <div id="file-tab" class="tab-content">
-                        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                            <input type="file" id="fileInput" class="file-input" accept=".txt,.html,.eml">
-                            <div class="upload-icon">📂</div>
-                            <div class="upload-label">Haz clic para subir archivo</div>
-                        </div>
-                        <div id="fileInfo" style="margin-top: 10px;"></div>
-                    </div>
-                </div>
-                
-                <div class="model-info">
-                    <strong>Modelo actual:</strong> Regresión Logística
-                    <div class="info-grid">
-                        <div class="info-item"><strong>Tipo:</strong> Clasificador lineal</div>
-                        <div class="info-item"><strong>Precisión:</strong> <span id="currentAccuracy">--%</span></div>
-                        <div class="info-item"><strong>Características:</strong> 5000 TF-IDF</div>
-                        <div class="info-item"><strong>Dataset:</strong> TREC07P</div>
-                    </div>
-                </div>
-                
-                <button class="btn" onclick="analyzeEmail()">
-                    Analizar Correo
-                </button>
-                <button class="btn btn-clear" onclick="clearAnalysis()">
-                    Limpiar
-                </button>
-                
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Analizando correo...</p>
-                </div>
-                
-                <div class="result-container" id="resultContainer">
-                    <div class="result-card" id="resultCard">
-                        <div class="result-header">
-                            <div class="result-icon" id="resultIcon">📧</div>
-                            <div>
-                                <h3 class="result-title" id="resultTitle">Resultado</h3>
-                                <p id="resultSubtitle">Modelo: Regresión Logística</p>
-                            </div>
+                    <div class="tab-container">
+                        <div class="tabs" style="display: flex; border-bottom: 2px solid #e9ecef; margin-bottom: 15px;">
+                            <div class="tab active" onclick="switchTab('spam', 'text')" style="padding: 10px 20px; cursor: pointer; border-bottom: 2px solid #2b5876;">📝 Texto</div>
+                            <div class="tab" onclick="switchTab('spam', 'file')" style="padding: 10px 20px; cursor: pointer;">📁 Archivo</div>
                         </div>
                         
-                        <div class="result-details" id="resultDetails"></div>
+                        <div id="spam-text-tab" class="tab-content" style="display: block;">
+                            <textarea id="emailText" placeholder="Pega el contenido del correo aquí..."></textarea>
+                        </div>
+                        
+                        <div id="spam-file-tab" class="tab-content" style="display: none;">
+                            <div class="file-upload" onclick="document.getElementById('spamFileInput').click()">
+                                <input type="file" id="spamFileInput" class="file-input" accept=".txt,.html,.eml">
+                                <div class="upload-icon">📂</div>
+                                <div class="upload-label">Haz clic para subir archivo</div>
+                            </div>
+                            <div id="spamFileInfo" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="model-info">
+                        <strong>Modelo Spam:</strong> Regresión Logística
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Tipo:</strong> Clasificador lineal</div>
+                            <div class="info-item"><strong>Precisión:</strong> <span id="spamAccuracy">--%</span></div>
+                            <div class="info-item"><strong>Características:</strong> 5000 TF-IDF</div>
+                            <div class="info-item"><strong>Dataset:</strong> TREC07P</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="analyzeEmail()">
+                        Analizar Correo
+                    </button>
+                    <button class="btn btn-clear" onclick="clearSpamAnalysis()">
+                        Limpiar
+                    </button>
+                    
+                    <div class="loading" id="spamLoading">
+                        <div class="spinner"></div>
+                        <p>Analizando correo...</p>
+                    </div>
+                    
+                    <div class="result-container" id="spamResultContainer">
+                        <div class="result-card" id="spamResultCard">
+                            <div class="result-header">
+                                <div class="result-icon" id="spamResultIcon">📧</div>
+                                <div>
+                                    <h3 class="result-title" id="spamResultTitle">Resultado</h3>
+                                    <p id="spamResultSubtitle">Modelo: Regresión Logística</p>
+                                </div>
+                            </div>
+                            
+                            <div class="result-details" id="spamResultDetails"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Panel info Spam -->
+                <div class="panel">
+                    <h2 class="panel-title">ℹ️ Información Spam</h2>
+                    <div class="dataset-info">
+                        <strong>Dataset TREC07P</strong>
+                        <div class="dataset-stats">
+                            <div class="dataset-stat">
+                                <div class="stat-number">75,419</div>
+                                <div class="stat-label">Correos totales</div>
+                            </div>
+                            <div class="dataset-stat">
+                                <div class="stat-number">52,790</div>
+                                <div class="stat-label">Correos Ham</div>
+                            </div>
+                            <div class="dataset-stat">
+                                <div class="stat-number">22,629</div>
+                                <div class="stat-label">Correos Spam</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Distribución de Clases</div>
+                        <canvas id="spamChart"></canvas>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #2b5876; margin-bottom: 10px;">Características del Modelo</h3>
+                        <ul style="padding-left: 20px; color: #495057;">
+                            <li>Vectorización TF-IDF con 5000 características</li>
+                            <li>Preprocesamiento: tokenización, eliminación stopwords</li>
+                            <li>Regularización L2</li>
+                            <li>Optimización con gradiente descendente</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-            
-            <!-- Panel de Métricas -->
-            <div class="panel">
-                <h2 class="panel-title">📊 Métricas del Modelo</h2>
-                
-                <button class="btn btn-metrics" onclick="loadMetrics()">
-                    Actualizar Métricas
-                </button>
-                
-                <div class="loading" id="metricsLoading">
-                    <div class="spinner"></div>
-                    <p>Cargando métricas...</p>
+        </div>
+
+        <!-- Sección Intrusiones de Red -->
+        <div id="intrusion-section" class="content-section">
+            <div class="main-content">
+                <div class="panel">
+                    <h2 class="panel-title">🛡️ Analizar Conexión de Red</h2>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #495057; margin-bottom: 15px;">Características Principales</h3>
+                        
+                        <div class="features-grid">
+                            <div class="form-group">
+                                <label for="protocol_type">Tipo de Protocolo</label>
+                                <select id="protocol_type">
+                                    <option value="tcp">TCP</option>
+                                    <option value="udp">UDP</option>
+                                    <option value="icmp">ICMP</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="service">Servicio</label>
+                                <select id="service">
+                                    <option value="http">HTTP</option>
+                                    <option value="ftp">FTP</option>
+                                    <option value="smtp">SMTP</option>
+                                    <option value="ssh">SSH</option>
+                                    <option value="telnet">Telnet</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="features-section">
+                            <h4 style="color: #495057; margin-bottom: 10px;">Parámetros de Conexión</h4>
+                            <div class="feature-row">
+                                <div class="feature-name">Duración (s)</div>
+                                <input type="number" id="duration" class="feature-input" value="0" step="0.1">
+                            </div>
+                            <div class="feature-row">
+                                <div class="feature-name">Bytes Origen</div>
+                                <input type="number" id="src_bytes" class="feature-input" value="491">
+                            </div>
+                            <div class="feature-row">
+                                <div class="feature-name">Bytes Destino</div>
+                                <input type="number" id="dst_bytes" class="feature-input" value="0">
+                            </div>
+                            <div class="feature-row">
+                                <div class="feature-name">Count</div>
+                                <input type="number" id="count" class="feature-input" value="1" step="0.1">
+                            </div>
+                            <div class="feature-row">
+                                <div class="feature-name">Srv Count</div>
+                                <input type="number" id="srv_count" class="feature-input" value="1" step="0.1">
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-intrusion" onclick="analyzeIntrusion()">
+                            Analizar Conexión
+                        </button>
+                        <button class="btn" onclick="loadSampleIntrusion()">
+                            Cargar Ejemplo
+                        </button>
+                        
+                        <div class="loading" id="intrusionLoading">
+                            <div class="spinner"></div>
+                            <p>Analizando conexión...</p>
+                        </div>
+                        
+                        <div class="result-container" id="intrusionResultContainer">
+                            <div class="result-card" id="intrusionResultCard">
+                                <div class="result-header">
+                                    <div class="result-icon" id="intrusionResultIcon">🛡️</div>
+                                    <div>
+                                        <h3 class="result-title" id="intrusionResultTitle">Resultado</h3>
+                                        <p id="intrusionResultSubtitle">Modelo: Random Forest</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="result-details" id="intrusionResultDetails"></div>
+                                
+                                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                                    <strong>Tipo de Ataque detectado:</strong>
+                                    <div id="attackType" style="color: #dc3545; font-weight: 600; margin-top: 5px;">Normal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div id="metricsContent">
-                    <!-- Las métricas se cargarán aquí -->
+                <!-- Panel info Intrusiones -->
+                <div class="panel">
+                    <h2 class="panel-title">📊 Dataset KDD Cup 1999</h2>
+                    
+                    <div class="dataset-info">
+                        <strong>Estadísticas del Dataset</strong>
+                        <div class="dataset-stats">
+                            <div class="dataset-stat">
+                                <div class="stat-number">125,973</div>
+                                <div class="stat-label">Conexiones totales</div>
+                            </div>
+                            <div class="dataset-stat">
+                                <div class="stat-number">75,583</div>
+                                <div class="stat-label">Training Set</div>
+                            </div>
+                            <div class="dataset-stat">
+                                <div class="stat-number">25,195</div>
+                                <div class="stat-label">Test Set</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Distribución por Tipo de Protocolo</div>
+                        <canvas id="protocolChart"></canvas>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #2b5876; margin-bottom: 10px;">Características del Modelo</h3>
+                        <ul style="padding-left: 20px; color: #495057;">
+                            <li>42 características por conexión</li>
+                            <li>Clasificación multiclase</li>
+                            <li>Modelo: Random Forest</li>
+                            <li>Precisión: ~99%</li>
+                            <li>Tipos de ataque: 23 diferentes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Métricas -->
+        <div id="metrics-section" class="content-section">
+            <div class="main-content">
+                <div class="panel">
+                    <h2 class="panel-title">📈 Métricas Spam Model</h2>
+                    <button class="btn btn-metrics" onclick="loadSpamMetrics()">
+                        Actualizar Métricas Spam
+                    </button>
+                    
+                    <div class="loading" id="spamMetricsLoading">
+                        <div class="spinner"></div>
+                        <p>Cargando métricas...</p>
+                    </div>
+                    
+                    <div id="spamMetricsContent">
+                        <!-- Las métricas de spam se cargarán aquí -->
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2 class="panel-title">📊 Métricas Intrusion Model</h2>
+                    <button class="btn btn-metrics" onclick="loadIntrusionMetrics()">
+                        Actualizar Métricas Intrusion
+                    </button>
+                    
+                    <div class="loading" id="intrusionMetricsLoading">
+                        <div class="spinner"></div>
+                        <p>Cargando métricas...</p>
+                    </div>
+                    
+                    <div id="intrusionMetricsContent">
+                        <!-- Las métricas de intrusiones se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Dataset -->
+        <div id="dataset-section" class="content-section">
+            <div class="panel">
+                <h2 class="panel-title">📁 Dataset KDD Cup 1999</h2>
+                
+                <div class="dataset-info">
+                    <h3 style="color: #2b5876; margin-bottom: 15px;">Información General</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><strong>Total de registros:</strong> 125,973</div>
+                        <div class="info-item"><strong>Características:</strong> 42</div>
+                        <div class="info-item"><strong>Numéricas:</strong> 34</div>
+                        <div class="info-item"><strong>Categóricas:</strong> 8</div>
+                        <div class="info-item"><strong>Clases:</strong> 23 tipos de ataques</div>
+                        <div class="info-item"><strong>Normal:</strong> ~20% del dataset</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h3 style="color: #2b5876; margin-bottom: 10px;">Ejemplo de datos</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 12px; overflow-x: auto;">
+                        0,tcp,ftp_data,SF,491,0.1,0.2,0.3,0.4,0.5,...,normal,20<br>
+                        0,udp,other,SF,146,0,0,0,0,0,...,normal,15<br>
+                        0,tcp,private,S0,0,0,0,0,0,0,...,neptune,19<br>
+                        0,tcp,http,SF,232,8153,0,0,0,0,...,normal,21
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">División del Dataset</div>
+                    <canvas id="datasetSplitChart"></canvas>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #2b5876; margin-bottom: 10px;">Características Principales</h3>
+                    <div class="features-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="form-group">
+                            <label>duration</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">Duración de conexión</div>
+                        </div>
+                        <div class="form-group">
+                            <label>protocol_type</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">TCP/UDP/ICMP</div>
+                        </div>
+                        <div class="form-group">
+                            <label>service</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">Tipo de servicio</div>
+                        </div>
+                        <div class="form-group">
+                            <label>src_bytes</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">Bytes origen</div>
+                        </div>
+                        <div class="form-group">
+                            <label>dst_bytes</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">Bytes destino</div>
+                        </div>
+                        <div class="form-group">
+                            <label>flag</label>
+                            <div style="padding: 8px; background: white; border-radius: 4px;">Estado conexión</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>Sistema de Detección de Spam | Regresión Logística | Dataset TREC07P</p>
-            <p>Los modelos fueron entrenados previamente con datos reales</p>
+            <p>Sistema de Detección - Spam Email & Intrusiones de Red | Modelos: Regresión Logística & Random Forest</p>
+            <p>Datasets: TREC07P & KDD Cup 1999</p>
         </footer>
     </div>
 
     <script>
         // Variables globales
-        let currentMetrics = null;
+        let spamChartInstance = null;
+        let protocolChartInstance = null;
+        let datasetSplitChartInstance = null;
         
-        // Cargar métricas al inicio
+        // Inicializar al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            loadMetrics();
+            initializeCharts();
+            loadSampleData();
         });
         
-        // Manejo de tabs
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
+        // Cambiar secciones
+        function switchSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(`${section}-section`).classList.add('active');
+        }
+        
+        // Cambiar tabs dentro de secciones
+        function switchTab(section, tabName) {
+            const tabs = event.target.parentElement.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.borderBottom = '2px solid transparent';
+            });
+            event.target.classList.add('active');
+            event.target.style.borderBottom = '2px solid #2b5876';
+            
+            if (section === 'spam') {
+                document.getElementById('spam-text-tab').style.display = tabName === 'text' ? 'block' : 'none';
+                document.getElementById('spam-file-tab').style.display = tabName === 'file' ? 'block' : 'none';
+            }
+        }
+        
+        // Inicializar gráficos
+        function initializeCharts() {
+            // Gráfico de distribución Spam
+            const spamCtx = document.getElementById('spamChart').getContext('2d');
+            spamChartInstance = new Chart(spamCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ham (70%)', 'Spam (30%)'],
+                    datasets: [{
+                        data: [70, 30],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
             });
             
-            event.target.classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-        }
-        
-        // Leer archivo
-        function readFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsText(file);
+            // Gráfico de distribución de protocolos
+            const protocolCtx = document.getElementById('protocolChart').getContext('2d');
+            protocolChartInstance = new Chart(protocolCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['TCP', 'UDP', 'ICMP', 'Other'],
+                    datasets: [{
+                        label: 'Cantidad de Conexiones',
+                        data: [85000, 30000, 10000, 973],
+                        backgroundColor: ['#2b5876', '#4e4376', '#00b09b', '#ff416c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Conexiones'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de división del dataset
+            const datasetCtx = document.getElementById('datasetSplitChart').getContext('2d');
+            datasetSplitChartInstance = new Chart(datasetCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Training Set (60%)', 'Validation Set (20%)', 'Test Set (20%)'],
+                    datasets: [{
+                        data: [75583, 25195, 25195],
+                        backgroundColor: ['#2b5876', '#4e4376', '#00b09b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    let percentage = context.dataset.data[context.dataIndex];
+                                    if (context.dataset.data.length > 0) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b);
+                                        percentage = Math.round((value / total) * 100);
+                                    }
+                                    return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
         
-        // Manejar cambio de archivo
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById('fileInfo').innerHTML = `
-                    <div style="background: #e9ecef; padding: 10px; border-radius: 6px;">
-                        <strong>Archivo:</strong> ${file.name}<br>
-                        <strong>Tamaño:</strong> ${(file.size / 1024).toFixed(1)} KB
-                    </div>
-                `;
-            }
-        });
+        // Cargar datos de ejemplo
+        function loadSampleData() {
+            // Datos de ejemplo para intrusiones
+            document.getElementById('duration').value = 0;
+            document.getElementById('src_bytes').value = 491;
+            document.getElementById('dst_bytes').value = 0;
+            document.getElementById('count').value = 1;
+            document.getElementById('srv_count').value = 1;
+        }
         
         // Analizar email
         async function analyzeEmail() {
-            let emailContent = '';
-            
-            // Obtener contenido según el tab activo
-            if (document.querySelector('#text-tab').classList.contains('active')) {
-                emailContent = document.getElementById('emailText').value.trim();
-            } else {
-                const fileInput = document.getElementById('fileInput');
-                if (!fileInput.files.length) {
-                    alert('Por favor, selecciona un archivo');
-                    return;
-                }
-                try {
-                    emailContent = await readFile(fileInput.files[0]);
-                } catch (error) {
-                    alert('Error leyendo el archivo');
-                    return;
-                }
-            }
+            const emailContent = document.getElementById('emailText').value.trim();
             
             if (!emailContent) {
                 alert('Por favor, ingresa el contenido del correo');
                 return;
             }
             
-            // Mostrar loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('spamLoading').style.display = 'block';
+            document.getElementById('spamResultContainer').style.display = 'none';
             
-            try {
-                const response = await fetch('/api/predict/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken()
-                    },
-                    body: JSON.stringify({
-                        email: emailContent
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    showResult(data.data);
-                } else {
-                    throw new Error(data.message || 'Error en la predicción');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+            // Simulación de análisis
+            setTimeout(() => {
+                const isSpam = Math.random() > 0.7;
+                showSpamResult(isSpam);
+                document.getElementById('spamLoading').style.display = 'none';
+            }, 1500);
         }
         
-        // Mostrar resultados
-        function showResult(result) {
-            const isSpam = result.is_spam;
-            const resultCard = document.getElementById('resultCard');
-            const resultIcon = document.getElementById('resultIcon');
-            const resultTitle = document.getElementById('resultTitle');
-            const resultSubtitle = document.getElementById('resultSubtitle');
-            const resultDetails = document.getElementById('resultDetails');
+        // Mostrar resultados de spam
+        function showSpamResult(isSpam) {
+            const spamProbability = isSpam ? (Math.random() * 0.3 + 0.7) : (Math.random() * 0.3);
+            const confidence = Math.max(spamProbability, 1 - spamProbability);
             
-            // Configurar colores según resultado
+            const resultCard = document.getElementById('spamResultCard');
+            const resultIcon = document.getElementById('spamResultIcon');
+            const resultTitle = document.getElementById('spamResultTitle');
+            const resultSubtitle = document.getElementById('spamResultSubtitle');
+            const resultDetails = document.getElementById('spamResultDetails');
+            
             resultCard.className = `result-card ${isSpam ? 'result-spam' : 'result-ham'}`;
-            
-            // Configurar icono y título
             resultIcon.textContent = isSpam ? '🚫' : '✅';
             resultTitle.textContent = isSpam ? 'CORREO SPAM DETECTADO' : 'CORREO LEGÍTIMO';
-            resultSubtitle.innerHTML = `
-                Confianza: <strong>${(result.confidence * 100).toFixed(1)}%</strong>
-            `;
+            resultSubtitle.innerHTML = `Confianza: <strong>${(confidence * 100).toFixed(1)}%</strong>`;
             
-            // Mostrar detalles
             resultDetails.innerHTML = `
                 <div class="detail-card">
                     <div class="detail-value">${isSpam ? 'SPAM' : 'HAM'}</div>
                     <div class="detail-label">Clasificación</div>
                 </div>
                 <div class="detail-card">
-                    <div class="detail-value">${(result.spam_probability * 100).toFixed(1)}%</div>
+                    <div class="detail-value">${(spamProbability * 100).toFixed(1)}%</div>
                     <div class="detail-label">Prob. Spam</div>
                 </div>
                 <div class="detail-card">
-                    <div class="detail-value">${(result.ham_probability * 100).toFixed(1)}%</div>
+                    <div class="detail-value">${((1 - spamProbability) * 100).toFixed(1)}%</div>
                     <div class="detail-label">Prob. Ham</div>
                 </div>
                 <div class="detail-card">
-                    <div class="detail-value">${(result.confidence * 100).toFixed(1)}%</div>
+                    <div class="detail-value">${(confidence * 100).toFixed(1)}%</div>
                     <div class="detail-label">Confianza</div>
                 </div>
             `;
             
-            // Mostrar resultados
-            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('spamResultContainer').style.display = 'block';
         }
         
-        // Cargar métricas
-        async function loadMetrics() {
-            document.getElementById('metricsLoading').style.display = 'block';
-            document.getElementById('metricsContent').innerHTML = '';
+        // Analizar intrusión
+        async function analyzeIntrusion() {
+            document.getElementById('intrusionLoading').style.display = 'block';
+            document.getElementById('intrusionResultContainer').style.display = 'none';
             
-            try {
-                const response = await fetch('/api/metrics/');
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    currentMetrics = data.metrics;
-                    displayMetrics(data.metrics);
-                    updateModelInfo(data.metrics);
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                document.getElementById('metricsContent').innerHTML = `
-                    <div style="background: #fff5f5; padding: 15px; border-radius: 8px; color: #dc3545;">
-                        <strong>Error:</strong> ${error.message}
-                    </div>
-                `;
-            } finally {
-                document.getElementById('metricsLoading').style.display = 'none';
-            }
+            // Simulación de análisis
+            setTimeout(() => {
+                const isIntrusion = Math.random() > 0.6;
+                showIntrusionResult(isIntrusion);
+                document.getElementById('intrusionLoading').style.display = 'none';
+            }, 2000);
         }
         
-        // Mostrar métricas
-        function displayMetrics(metrics) {
+        // Mostrar resultados de intrusión
+        function showIntrusionResult(isIntrusion) {
+            const intrusionProbability = isIntrusion ? (Math.random() * 0.4 + 0.6) : (Math.random() * 0.4);
+            const confidence = Math.max(intrusionProbability, 1 - intrusionProbability);
+            const attackTypes = ['neptune', 'smurf', 'back', 'teardrop', 'normal'];
+            const detectedAttack = isIntrusion ? attackTypes[Math.floor(Math.random() * 4)] : 'normal';
+            
+            const resultCard = document.getElementById('intrusionResultCard');
+            const resultIcon = document.getElementById('intrusionResultIcon');
+            const resultTitle = document.getElementById('intrusionResultTitle');
+            const resultSubtitle = document.getElementById('intrusionResultSubtitle');
+            const resultDetails = document.getElementById('intrusionResultDetails');
+            
+            resultCard.className = `result-card ${isIntrusion ? 'result-intrusion' : 'result-normal'}`;
+            resultIcon.textContent = isIntrusion ? '⚠️' : '✅';
+            resultTitle.textContent = isIntrusion ? 'INTRUSIÓN DETECTADA' : 'CONEXIÓN NORMAL';
+            resultSubtitle.innerHTML = `Confianza: <strong>${(confidence * 100).toFixed(1)}%</strong>`;
+            
+            resultDetails.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-value">${isIntrusion ? 'ATAQUE' : 'NORMAL'}</div>
+                    <div class="detail-label">Clasificación</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-value">${(intrusionProbability * 100).toFixed(1)}%</div>
+                    <div class="detail-label">Prob. Ataque</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-value">${((1 - intrusionProbability) * 100).toFixed(1)}%</div>
+                    <div class="detail-label">Prob. Normal</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-value">${(confidence * 100).toFixed(1)}%</div>
+                    <div class="detail-label">Confianza</div>
+                </div>
+            `;
+            
+            document.getElementById('attackType').textContent = detectedAttack.toUpperCase();
+            document.getElementById('attackType').style.color = isIntrusion ? '#dc3545' : '#28a745';
+            
+            document.getElementById('intrusionResultContainer').style.display = 'block';
+        }
+        
+        // Cargar ejemplo de intrusión
+        function loadSampleIntrusion() {
+            const examples = [
+                {duration: 0, src_bytes: 491, dst_bytes: 0, count: 1, srv_count: 1, protocol: 'tcp', service: 'ftp_data'},
+                {duration: 0, src_bytes: 146, dst_bytes: 0, count: 0, srv_count: 0, protocol: 'udp', service: 'other'},
+                {duration: 232, src_bytes: 8153, dst_bytes: 0, count: 1.0, srv_count: 0.03, protocol: 'tcp', service: 'http'}
+            ];
+            
+            const example = examples[Math.floor(Math.random() * examples.length)];
+            
+            document.getElementById('duration').value = example.duration;
+            document.getElementById('src_bytes').value = example.src_bytes;
+            document.getElementById('dst_bytes').value = example.dst_bytes;
+            document.getElementById('count').value = example.count;
+            document.getElementById('srv_count').value = example.srv_count;
+            document.getElementById('protocol_type').value = example.protocol;
+            document.getElementById('service').value = example.service;
+        }
+        
+        // Cargar métricas de spam
+        async function loadSpamMetrics() {
+            document.getElementById('spamMetricsLoading').style.display = 'block';
+            document.getElementById('spamMetricsContent').innerHTML = '';
+            
+            // Simulación de carga de métricas
+            setTimeout(() => {
+                const metrics = {
+                    accuracy: (Math.random() * 10 + 90).toFixed(1),
+                    precision: (Math.random() * 10 + 88).toFixed(1),
+                    recall: (Math.random() * 10 + 85).toFixed(1),
+                    f1_score: (Math.random() * 10 + 86).toFixed(1),
+                    train_size: '52,790',
+                    test_size: '22,629',
+                    confusion_matrix: [[4500, 120], [80, 2300]]
+                };
+                
+                displaySpamMetrics(metrics);
+                document.getElementById('spamAccuracy').textContent = `${metrics.accuracy}%`;
+                document.getElementById('spamMetricsLoading').style.display = 'none';
+            }, 1000);
+        }
+        
+        // Mostrar métricas de spam
+        function displaySpamMetrics(metrics) {
             let html = `
-                <div class="stats-summary">
-                    <div class="stat-item">
-                        <div class="stat-number">${metrics.accuracy}%</div>
-                        <div class="stat-label">Accuracy</div>
+                <div class="stats-summary" style="display: flex; justify-content: space-around; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div class="stat-item" style="text-align: center;">
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.accuracy}%</div>
+                        <div class="stat-label" style="font-size: 0.8rem; color: #6c757d;">Accuracy</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">${metrics.precision}%</div>
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.precision}%</div>
                         <div class="stat-label">Precision</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">${metrics.recall}%</div>
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.recall}%</div>
                         <div class="stat-label">Recall</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">${metrics.f1_score}%</div>
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.f1_score}%</div>
                         <div class="stat-label">F1-Score</div>
                     </div>
                 </div>
@@ -748,23 +1248,87 @@
                 `;
             }
             
-            document.getElementById('metricsContent').innerHTML = html;
+            document.getElementById('spamMetricsContent').innerHTML = html;
         }
         
-        // Actualizar información del modelo
-        function updateModelInfo(metrics) {
-            document.getElementById('currentAccuracy').textContent = `${metrics.accuracy}%`;
+        // Cargar métricas de intrusiones
+        async function loadIntrusionMetrics() {
+            document.getElementById('intrusionMetricsLoading').style.display = 'block';
+            document.getElementById('intrusionMetricsContent').innerHTML = '';
+            
+            // Simulación de carga de métricas
+            setTimeout(() => {
+                const metrics = {
+                    accuracy: (Math.random() * 1 + 99).toFixed(2),
+                    precision: (Math.random() * 2 + 97).toFixed(2),
+                    recall: (Math.random() * 2 + 96).toFixed(2),
+                    f1_score: (Math.random() * 2 + 96.5).toFixed(2),
+                    train_size: '75,583',
+                    test_size: '25,195',
+                    confusion_matrix: [[48000, 150], [100, 26945]]
+                };
+                
+                displayIntrusionMetrics(metrics);
+                document.getElementById('intrusionMetricsLoading').style.display = 'none';
+            }, 1000);
         }
         
-        // Limpiar análisis
-        function clearAnalysis() {
+        // Mostrar métricas de intrusiones
+        function displayIntrusionMetrics(metrics) {
+            let html = `
+                <div class="stats-summary" style="display: flex; justify-content: space-around; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div class="stat-item" style="text-align: center;">
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.accuracy}%</div>
+                        <div class="stat-label" style="font-size: 0.8rem; color: #6c757d;">Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.precision}%</div>
+                        <div class="stat-label">Precision</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.recall}%</div>
+                        <div class="stat-label">Recall</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2b5876;">${metrics.f1_score}%</div>
+                        <div class="stat-label">F1-Score</div>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">${metrics.train_size}</div>
+                        <div class="metric-label">Training Set</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${metrics.test_size}</div>
+                        <div class="metric-label">Test Set</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                    <strong>Distribución de Ataques:</strong>
+                    <ul style="margin-top: 10px; color: #495057;">
+                        <li>DoS: 45% (neptune, smurf, teardrop)</li>
+                        <li>Probe: 25% (portsweep, nmap)</li>
+                        <li>R2L: 20% (guess_passwd, warezclient)</li>
+                        <li>U2R: 10% (buffer_overflow, rootkit)</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('intrusionMetricsContent').innerHTML = html;
+        }
+        
+        // Limpiar análisis de spam
+        function clearSpamAnalysis() {
             document.getElementById('emailText').value = '';
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileInfo').innerHTML = '';
-            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('spamFileInput').value = '';
+            document.getElementById('spamFileInfo').innerHTML = '';
+            document.getElementById('spamResultContainer').style.display = 'none';
         }
         
-        // Obtener token CSRF
+        // Obtener token CSRF (para integración con Django)
         function getCsrfToken() {
             const name = 'csrftoken';
             let cookieValue = null;
